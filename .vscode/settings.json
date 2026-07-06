@@ -1,0 +1,11 @@
+{
+    // Hide .env from the file explorer, search, and quick-open so the
+    // API key can never appear on a shared screen. Set to false (or edit
+    // the file from a terminal/notepad) when you need to change the key.
+    "files.exclude": {
+        "**/.env": true
+    },
+    "search.exclude": {
+        "**/.env": true
+    }
+}
