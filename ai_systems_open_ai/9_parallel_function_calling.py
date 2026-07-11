@@ -1,0 +1,69 @@
+from openai_client import client
+
+
+# Returns the full response object; extract_dictionary below digs into it
+def get_response(messages, function_definition):
+    response =  client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        tools=function_definition,
+    )
+
+    return response.choices[0].message.tool_calls[1].function.arguments
+
+
+review = """
+I recently upgraded to the TechCorp ProMax and I'm loving it so far!
+The powerful processor handles everything I throw at it without any lag.
+It would be great if TechCorp offered more color options, though.
+"""
+
+messages = [
+    {
+        "role": "system",
+        "content": "Extract the product name, customer sentiment, product features mentioned, and any customer suggestions from the review provided by the user.",
+    },
+    {"role": "user", "content": review},
+]
+
+function_definition = [
+    {
+        "type": "function",
+        "function": {
+            "name": "extract_review_info",
+            "description": "Get the product, sentiment, features, and suggestions from the body of the input review",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "product": {
+                        "type": "string",
+                        "description": "Name of the product being reviewed",
+                    },
+                    "sentiment": {
+                        "type": "string",
+                        "description": "Overall sentiment of the review: positive, negative, or mixed",
+                    },
+                    "features": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Product features mentioned in the review, e.g. powerful processor",
+                    },
+                    "suggestions": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Suggestions or improvements the customer proposes, e.g. offer more color options",
+                    },
+                },
+                "required": ["product", "sentiment", "features", "suggestions"],
+            },
+        },
+    }
+]
+
+# Append the second function
+function_definition.append({'type': 'function', 'function':{'name': "reply_to_review", "description": "Generate a reply to the review", "parameters": {'type': "object", 'properties': {'reply': {"type": "string", "description": "Reply to the review"}}}}})
+
+response = get_response(messages, function_definition)
+
+# Print the response
+print(response)
